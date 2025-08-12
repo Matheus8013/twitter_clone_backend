@@ -22,8 +22,8 @@ from twitter_clone import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/users/', include('users.urls')),
-    path('api/posts/', include('posts.urls')),
-    path('api/follow/', include('follow.urls')),
+    path('api/users/', include(('users.urls', 'users') , namespace='users')),
+    path('api/posts/', include(('posts.urls', 'posts') , namespace='posts')),
+    path('api/follow/', include(('follow.urls', 'follow') , namespace='follow')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
