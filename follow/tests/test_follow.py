@@ -1,5 +1,3 @@
-# follow/tests/test_follow.py
-
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -54,7 +52,6 @@ class FollowViewSetTests(TestCase):
         response = self.client.get(following_url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Acessa a lista de resultados usando a chave 'results'
         self.assertEqual(len(response.data['results']), 2)
         following_usernames = [f['following_username'] for f in response.data['results']]
         self.assertIn(self.user2.username, following_usernames)

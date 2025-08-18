@@ -1,4 +1,5 @@
-from rest_framework import viewsets, permissions, status, generics
+from rest_framework import viewsets, permissions, status, generics, request
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
@@ -21,22 +22,51 @@ class PostViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        author_ids = self.request.query_params.get('author__in')
+
+        if author_ids is not None:
+            author_list = author_ids.split(',')
+            if author_list and author_list[0]:
+                queryset = queryset.filter(author__id__in=author_list)
+            else:
+                return queryset.none()
+
+        return queryset
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
 class LikeViewSet(viewsets.ModelViewSet):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+    @action(detail=False, methods=['post'], url_path='toggle')
+    def toggle_like(self, request):
+        post_id = request.data.get('post_id')
+        user = request.user
+        post = get_object_or_404(Post, pk=post_id)
 
-    @action(detail=True, methods=['delete'])
-    def unlike(self, request, pk=None):
         try:
-            like = Like.objects.get(post_id=pk, user=request.user)
+            like = Like.objects.get(user=user, post=post)
             like.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            is_liked = False
         except Like.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            Like.objects.create(user=user, post=post)
+            is_liked = True
+
+        updated_post_serializer = PostSerializer(post, context={'request': request})
+        return Response(updated_post_serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'])
+    def user_likes(self, request):
+        likes = self.queryset.filter(user=request.user)
+        serializer = self.get_serializer(likes, many=True)
+        return Response(serializer.data)
 
 class FeedView(generics.ListAPIView):
     serializer_class = PostSerializer
@@ -48,26 +78,24 @@ class FeedView(generics.ListAPIView):
         following_users_ids = list(following_users_ids) + [user.id]
         return Post.objects.filter(author_id__in=following_users_ids).order_by('-created_at')
 
+    def get_serializer_context(self):
+        return {'request': self.request}
+
 
 class CommentViewSet(viewsets.ModelViewSet):
-    # O queryset padrão para a viewset
     queryset = Comment.objects.all().order_by('-created_at')
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticated, IsAuthorOrReadOnly]
 
     def get_queryset(self):
-        print("--- GET_QUERYSET EXECUTADO ---")
         queryset = super().get_queryset()
 
         post_id = self.request.query_params.get('post')
-        print(f"Valor de 'post' recebido: {post_id}")
 
         if post_id:
             filtered_queryset = queryset.filter(post_id=post_id)
-            print(f"Objetos no queryset filtrado: {filtered_queryset.count()}")
             return filtered_queryset
 
-        print(f"Retornando queryset não filtrado de tamanho: {queryset.count()}")
         return queryset
 
     def list(self, request, *args, **kwargs):

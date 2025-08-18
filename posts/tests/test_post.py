@@ -33,9 +33,11 @@ class PostViewSetTests(TestCase):
 
         response = self.client.get(self.post_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         self.assertEqual(len(response.data['results']), 2)
 
-        author_usernames = [post['author_username'] for post in response.data['results']]
+        author_usernames = [post['author']['username'] for post in response.data['results']]
+
         self.assertIn(self.user1.username, author_usernames)
         self.assertIn(self.user2.username, author_usernames)
         self.assertNotIn(self.user3.username, author_usernames)

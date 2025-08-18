@@ -54,7 +54,6 @@ class CommentViewSetTests(TestCase):
 
     def test_list_comments_for_post(self):
         print("--- TESTE DE LISTAGEM ---")
-        # Confirme a contagem no início do teste
         print(f"Comentários no início do teste: {Comment.objects.count()}")
 
         comments_url = reverse('posts:comments-list')
