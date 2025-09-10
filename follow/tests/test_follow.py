@@ -40,7 +40,7 @@ class FollowViewSetTests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 2)
-        follower_usernames = [f['follower_username'] for f in response.data['results']]
+        follower_usernames = [f['follower']['username'] for f in response.data['results']]
         self.assertIn(self.user1.username, follower_usernames)
         self.assertIn(self.user3.username, follower_usernames)
 
@@ -53,7 +53,7 @@ class FollowViewSetTests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 2)
-        following_usernames = [f['following_username'] for f in response.data['results']]
+        following_usernames = [f['following']['username'] for f in response.data['results']]
         self.assertIn(self.user2.username, following_usernames)
         self.assertIn(self.user3.username, following_usernames)
 
