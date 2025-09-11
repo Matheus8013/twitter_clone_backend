@@ -16,7 +16,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # A SECRET_KEY será definida no arquivo WSGI, então ela será lida aqui.
-SECRET_KEY = os.environ['SECRET_KEY']
+SECRET_KEY = os.environ.get('SECRET_KEY' , 'z{&UxhL018s`4/V6@vvk"Z>>Na|1VRYZAf!^<Pys:M/TDQ"3N1')
 
 # DEBUG deve ser False em produção
 DEBUG = False
