@@ -25,7 +25,8 @@ DEBUG = False
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'matheus8013.pythonanywhere.com'
+    'matheus8013.pythonanywhere.com',
+    'https://twitter-clone-frontend-dnzq.vercel.app/'
 ]
 
 
